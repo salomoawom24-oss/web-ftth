@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gen-Z Infrastructure Dashboard v4 - Salomo Awom</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* --- GEN Z CHROMATIC DARK MODE PALETTE --- */
+        :root {
+            --bg-main: #030712;
+            --card-bg: #0b0f19;
+            --accent-purple: #c084fc;
+            --accent-cyan: #22d3ee;
+            --accent-green: #34d399;
+            --accent-pink: #f43f5e;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --radius-lg: 24px;
+            --radius-md: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            padding: 2.5rem 1.5rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* --- GLOWING TOP BANNER --- */
+        .header-banner {
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9, #be185d);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 20px 40px rgba(109, 40, 217, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-tag {
+            background: rgba(255, 255, 255, 0.18);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-meta {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* --- DASHBOARD FORMS GRID --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        @media (min-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+
+        /* --- FORMS LAYOUT CARD --- */
+        .form-card {
+            background-color: var(--card-bg);
+            border: 2px solid #1f2937;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+            transition: border-color 0.3s ease;
+        }
+
+        .form-card:hover {
+            border-color: var(--accent-purple);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #1f2937;
+            padding-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        /* --- INPUTS & 3 COLUMNS STRUCTURE --- */
+        .rows-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            background-color: rgba(0,0,0,0.25);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+        }
+
+        .field-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .field-box label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            background-color: #05070f;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        /* --- INTERACTIVE ACTIONS --- */
+        .btn {
+            cursor: pointer;
+            font-weight: 700;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-add {
+            background-color: rgba(192, 132, 252, 0.12);
+            color: #e9d5ff;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(192, 132, 252, 0.25);
+        }
+
+        .btn-add:hover {
+            background-color: var(--accent-purple);
+            color: black;
+        }
+
+        .btn-trash {
+            background-color: rgba(244, 63, 94, 0.15);
+            color: var(--accent-pink);
+            padding: 0.6rem;
+            border-radius: 8px;
+            margin-top: 1.25rem;
+        }
+
+        .btn-trash:hover {
+            background-color: var(--accent-pink);
+            color: white;
+        }
+
+        /* --- VISUAL LIVE TABLES SECTION --- */
+        .table-section-heading {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 3.5rem 0 1.5rem 0;
+            border-left: 5px solid var(--accent-cyan);
+            padding-left: 0.75rem;
+        }
+
+        .tables-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 3.5rem;
+        }
+
+        @media (min-width: 992px) {
+            .tables-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .table-container {
+            background-color: #090d16;
+            border: 2px solid #1f2937;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            overflow-x: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .table-container h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #04060c;
+            color: var(--text-secondary);
+            padding: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            border-bottom: 2px solid #1f2937;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #1f2937;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* --- FOOTER TOTAL PANEL --- */
+        .summary-panel {
+            background-color: #080c14;
+            border: 3px solid white;
+            box-shadow: 10px 10px 0px white; /* Neo-brutalism design */
+            border-radius: var(--radius-lg);
+            padding: 2.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .summary-panel {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .total-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+
+        .total-value {
+            font-size: 2.75rem;
+            font-weight: 900;
+            color: var(--accent-green);
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+        }
+
+        .actions-group {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        @media (min-width: 640px) {
+            .actions-group {
+                flex-direction: row;
+                width: auto;
+            }
+        }
+
+        .btn-action-pdf {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-action-excel {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+        }
+
+        .btn-action-pdf:hover, .btn-action-excel:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* --- PRINT STYLESHEET --- */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding: 0;
+            }
+            .header-banner {
+                background: none !important;
+                border: 2px solid black !important;
+                color: black !important;
+                box-shadow: none !important;
+                padding: 1.5rem;
+            }
+            .header-title { color: black !important; }
+            .header-tag, .btn-add, .btn-trash, .actions-group, .dashboard-grid {
+                display: none !important;
+            }
+            .table-section-heading {
+                color: black !important;
+                border-left-color: black !important;
+                margin-top: 1rem;
+            }
+            .tables-grid {
+                display: block !important;
+            }
+            .table-container {
+                background: none !important;
+                border: 1px solid black !important;
+                box-shadow: none !important;
+                margin-bottom: 2rem;
+                page-break-inside: avoid;
+            }
+            .table-container h3 {
+                color: black !important;
+            }
+            th {
+                background-color: #f3f4f6 !important;
+                color: black !important;
+                border-bottom: 1px solid black !important;
+            }
+            td {
+                color: black !important;
+                border-bottom: 1px solid #e5e7eb !important;
+            }
+            .summary-panel {
+                background: none !important;
+                border: 2px solid black !important;
+                box-shadow: none !important;
+                color: black !important;
+                margin-top: 2rem;
+            }
+            .total-value { color: black !important; text-shadow: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header-banner">
+            <div class="header-tag">⚡ Live System Framework</div>
+            <h1 class="header-title">Infrastructure Input Analytics</h1>
+            <div class="header-meta">
+                <span>👤 Dikerjakan atas nama: <strong>Salomo awom</strong></span>
+                <span>📅 Tanggal: <strong>30 jun 2026</strong></span>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            
+            <section class="form-card">
+                <div class="card-top">
+                    <h2 class="card-title">🗼 1. Form Tiang</h2>
+                    <button class="btn btn-add" onclick="addRow('tiang')">+ Baris</button>
+                </div>
+                <div class="rows-wrapper" id="box-tiang"></div>
+            </section>
+
+            <section class="form-card">
+                <div class="card-top">
+                    <h2 class="card-title">🔌 2. Form Kabel</h2>
+                    <button class="btn btn-add" onclick="addRow('kabel')">+ Baris</button>
+                </div>
+                <div class="rows-wrapper" id="box-kabel"></div>
+            </section>
+
+            <section class="form-card">
+                <div class="card-top">
+                    <h2 class="card-title">📦 3. Form ODP</h2>
+                    <button class="btn btn-add" onclick="addRow('odp')">+ Baris</button>
+                </div>
+                <div class="rows-wrapper" id="box-odp"></div>
+            </section>
+
+            <section class="form-card">
+                <div class="card-top">
+                    <h2 class="card-title">🎛️ 4. Form ODC</h2>
+                    <button class="btn btn-add" onclick="addRow('odc')">+ Baris</button>
+                </div>
+                <div class="rows-wrapper" id="box-odc"></div>
+            </section>
+
+            <section class="form-card full-width">
+                <div class="card-top">
+                    <h2 class="card-title">🏠 5. Form Nama Pemilik Rumah & Lokasi</h2>
+                    <button class="btn btn-add" onclick="addRow('rumah', false)">+ Baris</button>
+                </div>
+                <div class="rows-wrapper" id="box-rumah"></div>
+            </section>
+        </div>
+
+        <h2 class="table-section-heading">📊 Live Dashboard - 3 Tabel Laporan Resmi</h2>
+        <div class="tables-grid">
+            
+            <div class="table-container">
+                <h3>📋 Tabel 1: Elemen Distribusi Jalur (Tiang & Kabel)</h3>
+                <table id="table-jalur">
+                    <thead>
+                        <tr>
+                            <th>Jenis Form</th>
+                            <th>Lokasi</th>
+                            <th>Biaya</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="table-container">
+                <h3>📋 Tabel 2: Hub Terminal Perangkat (ODP & ODC)</h3>
+                <table id="table-terminal">
+                    <thead>
+                        <tr>
+                            <th>Jenis Form</th>
+                            <th>Lokasi</th>
+                            <th>Biaya</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="table-container">
+                <h3>📋 Tabel 3: Pemetaan Kepemilikan Rumah</h3>
+                <table id="table-pemilik">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Pemilik Rumah</th>
+                            <th>Lokasi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <footer class="summary-panel">
+            <div>
+                <p class="total-title">Total Jumlah Biaya Keseluruhan</p>
+                <p class="total-value" id="grand-total">Rp 0</p>
+            </div>
+            <div class="actions-group">
+                <button class="btn btn-action-excel" onclick="exportExcelEngine()">📊 Export ke Excel</button>
+                <button class="btn btn-action-pdf" onclick="window.print()">🖨️ Cetak ke PDF</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Membuka baris awal secara default sewaktu halaman dijalankan
+        window.onload = () => {
+            addRow('tiang', true);
+            addRow('kabel', true);
+            addRow('odp', true);
+            addRow('odc', true);
+            addRow('rumah', false);
+        };
+
+        // Engine Penambah Baris Multi-Kolom Dinamis
+        function addRow(category, hasCostField = true) {
+            const containerBox = document.getElementById(`box-${category}`);
+            const rowId = 'row_' + Date.now() + Math.floor(Math.random() * 1000);
+            
+            let htmlStructure = '';
+            if (hasCostField) {
+                htmlStructure = `
+                    <div class="input-row" id="${rowId}">
+                        <div class="field-box">
+                            <label>Jumlah / Nama ${category}</label>
+                            <input type="text" class="input-item" oninput="liveUpdateEngine()" placeholder="Misal: 5 Unit / ${category} A" required>
+                        </div>
+                        <div class="field-box">
+                            <label>Lokasi</label>
+                            <input type="text" class="input-location" oninput="liveUpdateEngine()" placeholder="Lokasi koordinat/wilayah..." required>
+                        </div>
+                        <div class="field-box">
+                            <label>Biaya (Rp)</label>
+                            <input type="number" class="input-cost" oninput="liveUpdateEngine()" placeholder="Nominal biaya..." required>
+                        </div>
+                        <button class="btn btn-trash" onclick="deleteRow('${rowId}')">🗑️</button>
+                    </div>
+                `;
+            } else {
+                htmlStructure = `
+                    <div class="input-row" id="${rowId}">
+                        <div class="field-box">
+                            <label>Nama Pemilik Rumah</label>
+                            <input type="text" class="input-owner" oninput="liveUpdateEngine()" placeholder="Nama pemilik rumah..." required>
+                        </div>
+                        <div class="field-box">
+                            <label>Lokasi</label>
+                            <input type="text" class="input-location" oninput="liveUpdateEngine()" placeholder="Alamat atau lokasi rumah..." required>
+                        </div>
+                        <button class="btn btn-trash" onclick="deleteRow('${rowId}')">🗑️</button>
+                    </div>
+                `;
+            }
+            containerBox.insertAdjacentHTML('beforeend', htmlStructure);
+            liveUpdateEngine();
+        }
+
+        function deleteRow(id) {
+            const rowNode = document.getElementById(id);
+            if (rowNode) { rowNode.remove(); liveUpdateEngine(); }
+        }
+
+        // Live Synchronization Engine untuk Form Input ke 3 Tabel & Total Biaya
+        function liveUpdateEngine() {
+            let runningTotal = 0;
+            const currencyFormatter = (val) => 'Rp ' + val.toLocaleString('id-ID');
+
+            // --- REKAP TABEL 1 (TIANG & KABEL) ---
+            const t1Body = document.querySelector('#table-jalur tbody');
+            t1Body.innerHTML = '';
+            ['tiang', 'kabel'].forEach(cat => {
+                document.querySelectorAll(`#box-${cat} .input-row`).forEach(row => {
+                    const item = row.querySelector('.input-item').value || '-';
+                    const loc = row.querySelector('.input-location').value || '-';
+                    const cost = parseFloat(row.querySelector('.input-cost').value) || 0;
+                    runningTotal += cost;
+                    t1Body.innerHTML += `<tr><td><b style="text-transform:capitalize;">${cat}</b> (${item})</td><td>${loc}</td><td>${currencyFormatter(cost)}</td></tr>`;
+                });
+            });
+
+            // --- REKAP TABEL 2 (ODP & ODC) ---
+            const t2Body = document.querySelector('#table-terminal tbody');
+            t2Body.innerHTML = '';
+            ['odp', 'odc'].forEach(cat => {
+                document.querySelectorAll(`#box-${cat} .input-row`).forEach(row => {
+                    const item = row.querySelector('.input-item').value || '-';
+                    const loc = row.querySelector('.input-location').value || '-';
+                    const cost = parseFloat(row.querySelector('.input-cost').value) || 0;
+                    runningTotal += cost;
+                    t2Body.innerHTML += `<tr><td><b style="text-transform:uppercase;">${cat}</b> (${item})</td><td>${loc}</td><td>${currencyFormatter(cost)}</td></tr>`;
+                });
+            });
+
+            // --- REKAP TABEL 3 (NAMA PEMILIK RUMAH & LOKASI) ---
+            const t3Body = document.querySelector('#table-pemilik tbody');
+            t3Body.innerHTML = '';
+            document.querySelectorAll('#box-rumah .input-row').forEach((row, index) => {
+                const ownerName = row.querySelector('.input-owner').value || '-';
+                const ownerLoc = row.querySelector('.input-location').value || '-';
+                t3Body.innerHTML += `<tr><td>${index + 1}</td><td>${ownerName}</td><td>${ownerLoc}</td></tr>`;
+            });
+
+            // Set Total Keseluruhan Biaya Akhir
+            document.getElementById('grand-total').innerText = currencyFormatter(runningTotal);
+        }
+
+        // Engine Ekspor Data Excel (.xlsx) Multi-Tab Terstruktur Berbasis Objek
+        function exportExcelEngine() {
+            const wb = XLSX.utils.book_new();
+            const currentGrandTotal = document.getElementById('grand-total').innerText;
+
+            // Sheet 1: Metadata Ringkasan Proyek
+            const summaryMatrix = [
+                ["LAPORAN INTEGRASI DATA DAN BIAYA INFRASTRUKTUR"],
+                [],
+                ["Dikerjakan Atas Nama", "Salomo awom"],
+                ["Tanggal Pelaksanaan", "30 jun 2026"],
+                [],
+                ["TOTAL JUMLAH BIAYA KESELURUHAN", currentGrandTotal]
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryMatrix), "Summary Overview");
+
+            // Helper untuk mengompilasi lembar kerja per komponen form input
+            const extractFormCategory = (cat, hasCost = true) => {
+                const dataArray = hasCost ? [["No", "Deskripsi / Jumlah", "Lokasi", "Biaya (Rp)"]] : [["No", "Nama Pemilik Rumah", "Lokasi / Alamat"]];
+                document.querySelectorAll(`#box-${cat} .input-row`).forEach((row, idx) => {
+                    if (hasCost) {
+                        dataArray.push([
+                            idx + 1, 
+                            row.querySelector('.input-item').value || '-', 
+                            row.querySelector('.input-location').value || '-', 
+                            parseFloat(row.querySelector('.input-cost').value) || 0
+                        ]);
+                    } else {
+                        dataArray.push([
+                            idx + 1, 
+                            row.querySelector('.input-owner').value || '-', 
+                            row.querySelector('.input-location').value || '-'
+                        ]);
+                    }
+                });
+                return XLSX.utils.aoa_to_sheet(dataArray);
+            };
+
+            XLSX.utils.book_append_sheet(wb, extractFormCategory('tiang'), "Data Tiang");
+            XLSX.utils.book_append_sheet(wb, extractFormCategory('kabel'), "Data Kabel");
+            XLSX.utils.book_append_sheet(wb, extractFormCategory('odp'), "Data ODP");
+            XLSX.utils.book_append_sheet(wb, extractFormCategory('odc'), "Data ODC");
+            XLSX.utils.book_append_sheet(wb, extractFormCategory('rumah', false), "Pemilik Rumah");
+
+            // Proses unduhan file .xlsx langsung ke sistem komputer pengguna
+            XLSX.writeFile(wb, "Laporan_Komprehensif_Salomo_Awom_30Jun2026.xlsx");
+        }
+    </script>
+</body>
+</html>
